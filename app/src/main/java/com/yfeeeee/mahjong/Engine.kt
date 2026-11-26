@@ -548,7 +548,7 @@ class Engine(
         score += c.points
         texts.add(FText(mx, my - bh * 0.35f, "+${c.points}", now, GOLD, 30f * dp))
         if (c.combo >= 2) {
-            texts.add(FText(mx, my - bh * 0.80f, "КОМБО ×${c.combo}", Color(0xFFFF9E40), now, 22f * dp))
+            texts.add(FText(mx, my - bh * 0.80f, "КОМБО ×${c.combo}", now, Color(0xFFFF9E40), 22f * dp))
         }
         sfx.play("clack", 1f, 0.95f + rnd.nextFloat() * 0.12f)
         sfx.play("match", 0.75f, min(1.6f, 1f + 0.07f * (c.combo - 1)))
