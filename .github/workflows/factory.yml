@@ -1,0 +1,69 @@
+name: Build Pixel Factory APK
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'factory/**'
+      - '.github/workflows/factory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: factory
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Build debug APK
+        id: build
+        run: |
+          set -o pipefail
+          gradle assembleDebug --no-daemon --console=plain 2>&1 | tee build.log
+
+      - name: Prepare APK
+        if: steps.build.outcome == 'success'
+        run: cp app/build/outputs/apk/debug/app-debug.apk PixelFactory.apk
+
+      - uses: actions/upload-artifact@v4
+        if: steps.build.outcome == 'success'
+        with:
+          name: pixel-factory-apk
+          path: factory/PixelFactory.apk
+
+      - name: Publish release (public download link)
+        if: steps.build.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete factory-latest --cleanup-tag -y || true
+          gh release create factory-latest PixelFactory.apk \
+            --title "Pixel Factory (последняя сборка)" \
+            --notes "Разработчик: @yfeeeee. Скачайте PixelFactory.apk и установите." \
+            --target "${{ github.sha }}"
+
+      - name: Publish build log (always)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tail -n 400 build.log > build-tail.log || echo "no log" > build-tail.log
+          gh release delete factory-buildlog --cleanup-tag -y || true
+          gh release create factory-buildlog build-tail.log \
+            --title "Build log" \
+            --notes "outcome: ${{ steps.build.outcome }} sha: ${{ github.sha }}" \
+            --target "${{ github.sha }}"
