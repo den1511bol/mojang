@@ -50,7 +50,7 @@ class Renderer(val sp: Sprites) {
         lightCanvas = Canvas(lightMask!!)
     }
 
-    fun setScale(s: Int) { scale = Math.max(2, Math.min(8, s)) }
+    fun changeScale(s: Int) { scale = Math.max(2, Math.min(8, s)) }
 
     fun sx(wx: Float): Float = (wx - camX) * tile + W / 2f
     fun sy(wy: Float): Float = (wy - camY) * tile + H / 2f

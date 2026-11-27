@@ -1,17 +1,49 @@
-// Pixel Factory - stub for early compile check. Developer: @yfeeeee
+// Pixel Factory - main activity. Developer: @yfeeeee
 package com.yfeeeee.factory
 
 import android.app.Activity
 import android.os.Bundle
-import com.yfeeeee.factory.core.*
-import com.yfeeeee.factory.engine.*
+import android.view.View
+import android.view.WindowManager
 
 class MainActivity : Activity() {
-    override fun onCreate(b: Bundle?) {
-        super.onCreate(b)
-        val g = Game(1)
-        g.newGame()
-        val r = Renderer(Sprites())
-        if (g.world.N > 0 && r.W > 0) Save.VERSION
+    private var view: GameView? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        val v = GameView(this)
+        view = v
+        setContentView(v)
+        immersive()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun immersive() {
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) immersive()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        view?.pauseGame()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        view?.resumeGame()
+        immersive()
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+        val v = view
+        if (v == null || !v.back()) super.onBackPressed()
     }
 }
